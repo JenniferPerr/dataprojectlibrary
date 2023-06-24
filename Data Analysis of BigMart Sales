@@ -1,0 +1,287 @@
+The BigMart dataset is a collection sales data from 2013. It contains sales data from numerous products in the stores such as Supermarket or Grocery chains. The goal is to help BigMart launch a chain of supermarkets and grocery stores across the country. So, we are reviewing the dataset to optimize purchasing patterns for different aspects of the dataset. We need to find answers to the following questions upon completion of our data analysis.
+
+1. Does the outlet type (grocery store or supermarket) have any impact on the overall sales?
+2. Which type of city has the most overall sales? Or which outlet location makes the most overall sales?
+3. Does the outlet size have any impact on the overall sales?
+4. Which category of products sells the most and the least?
+5. Do the product visibility and weight have any impact on the sales of the product?
+6. What is the average MRP of the product that sells the most and the least? 7. Which category do these products fall under?
+8. What are some products that sell better in Tier 1 cities as compared to Tier 2 and Tier 3 cities?
+9. Are there any products selling better in Tier 2 and 3 cities as compared to Tier 1 cities?
+
+Acknowledgement:
+The dataset is taken from Kaggle:\
+https://www.kaggle.com/yasserh/bigmartsalesdataset
+
+
+
+
+
+
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import warnings
+warnings.filterwarnings("ignore")
+print("The modules are imported")
+df = pd.read_csv('/content/drive/MyDrive/Colab Notebooks/Train.csv')
+
+!pip3 ("install pandas") ==1.3;2
+
+df.head(10)
+
+from pandas.core.ops.methods import add_flex_arithmetic_methods
+import pandas as pd
+d = {'/content/drive/MyDrive/Colab Notebooks/Train.csv'}
+df = pd.DataFrame(d)
+df = pd.DataFrame({'Item_Identifier': [1, 2], 'Outlet_Identifier': [3, 4]})
+df = df.drop('Outlet_Identifier', axis=1)
+print(df)
+df.drop(['Item_Identifier'], axis=1,inplace=True)
+df = pd.DataFrame({'Item_Identifier': [1, 2], 'Outlet_Identifier': [3, 4]})
+df = df.drop(['Item_Identifier','Outlet_Identifier'], axis=1)
+if 'Item_Identifier' in df.columns:
+    print('Column B exists')
+else:
+  print("Column B does not exist")
+
+pd.value_counts(df.values.flatten())
+df = pd.DataFrame({'Item_Type': [1, 2], 'Item_MRP': [3, None], 'Item_Visibility': [None, 4]})
+print(df.isnull())
+
+
+df = pd.DataFrame({'Item_Weight': [1, 2], 'Item_Fat_Content': [3, None], 'Outlet_Establishment_Year': [None, 4]})
+print(df.isnull())
+
+df = pd.DataFrame({'Outlet_Size': [1, 2], 'Outlet_Location_Type': [3, None], 'Outlet_Type': [None, 4]})
+print(df.isnull())
+
+df = pd.DataFrame({'Item_Outlet_Sales': [1, 2]})
+print(df.isnull())
+
+import plotly.express as px
+fig = px.box(df, y = "Item_Weight")
+fig.show()
+
+#Clear of Outliers, using mean imputation.
+df["Item_Weight"].fillna(df["Item_Weight"].mean(), inplace=True)
+
+#Checking if all missing values are filled or not
+df["Item_Weight"].isnull().sum()
+
+#Since Outlet_Size is a categorical variable, will use same process - mode imputation.
+df["Outlet_Size"].fillna(df["Outlet_Size"].mode()[0],inplace=True)
+df["Outlet_Size"].isnull().sum()
+
+#Values are filled. Analysis of Sales corresponding to each factor.
+#converting from scientific notation to numerical format
+df.head()
+
+
+outlet_type_sales = df.groupby("Outlet_Type")[["Item_Outlet_Sales"]].sum()
+pd.set_option('display.float_format', lambda x: '%.3f' % x) #converting from scientific notation to numerical format
+outlet_type_sales.sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+
+Supermarket Type1 makes the most sales across the city, however, Grocery Store makes the least amount of sales.
+
+data = df.groupby("Outlet_Type")[["Item_Outlet_Sales"]].sum().sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+px.bar(data, x= 'Outlet_Type', y="Item_Outlet_Sales",color='Outlet_Type',color_discrete_sequence=px.colors.qualitative.Pastel1)
+
+fig = px.colors.qualitative.swatches()
+fig.show()
+
+data = df.groupby("Outlet_Type")[["Item_Outlet_Sales"]].sum().sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+data['name'] = data['Outlet_Type'].apply(lambda x: 'Outlet_Type = {}'.format(x))
+fig = px.bar(data, x= 'Outlet_Type', y="Item_Outlet_Sales",color='Outlet_Type',color_discrete_sequence=px.colors.qualitative.Pastel1)
+fig.update_layout(showlegend=True)
+
+
+
+Outlet Type v/s Sales bar chart(above).
+
+
+
+(Below) Outlet Location vs. Sales
+
+> Per the chart, Tier3 Cities perform best in sales, following Tier2 and Tier1 with the lowest amount of sales. This contradicts our hypothesis that Tier1 cities might generate the most sales followed by Tiers 2 and 3 consecutively.
+
+
+pd.set_option('display.float_format', lambda x: '%.3f' % x)
+location_type_sales = df.groupby("Outlet_Location_Type")[["Item_Outlet_Sales"]].sum().reset_index()
+location_type_sales.sort_values(by=['Item_Outlet_Sales'],ascending=[False])
+
+data = df.groupby("Outlet_Location_Type")[["Item_Outlet_Sales"]].sum().sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+px.bar(data, x= 'Outlet_Location_Type', y="Item_Outlet_Sales",color='Outlet_Location_Type',color_discrete_sequence=px.colors.qualitative.T10)
+
+Outlet Size v/s Sales.
+
+Based on information below, Medium sized Outlets have performed better than Small and High-sized outlets.
+
+
+
+pd.set_option('display.float_format', lambda x: '%.3f' % x)
+outlet_size_sales = df.groupby("Outlet_Size")[["Item_Outlet_Sales"]].sum().reset_index()
+outlet_size_sales.sort_values(by=['Item_Outlet_Sales'],ascending=[False])
+
+data = df.groupby("Outlet_Size")[["Item_Outlet_Sales"]].sum().sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+px.bar(data, x= 'Outlet_Size', y="Item_Outlet_Sales",color='Outlet_Size',color_discrete_sequence=px.colors.qualitative.Set3)
+
+Item Category v/s Sales
+
+df.groupby("Item_Type")[["Item_Outlet_Sales"]].max().sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+
+Per the observation, above we see that Household Item are bestsellers, followed by Fruits and Vegetables, and Snack Foods as most popular bought items, while Others has the lowest in sale. The analysis is achieved by keeping all cities, outlet size, and outlet type constant.
+
+data=df.groupby("Item_Type")[["Item_Outlet_Sales"]].max().sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+px.bar(data, x= 'Item_Type', y="Item_Outlet_Sales",color='Item_Type',color_discrete_sequence=px.colors.qualitative.Bold)
+
+Item Visibility and Weight v/s Sales
+
+df['Item_Visibility'].unique()
+
+#Item_Visibility=0 doesn't make sense, it should be removed
+df.drop(df.loc[df['Item_Visibility']==0].index, inplace=True)
+pd.set_option('display.float_format', lambda x: '%.3f' % x)
+item_visibility_sales = df.groupby("Item_Visibility")[["Item_Outlet_Sales"]].sum().sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+item_visibility_sales.sort_values(by=['Item_Outlet_Sales'],ascending=[False])
+
+#Item_Visibility has over 7800 rows, bar charts are not suitable in this situation, so we will make a scatterplot to visualize our result.
+fig = px.scatter(df,x='Item_Visibility', y='Item_Outlet_Sales',color='Item_Visibility')
+fig.show()
+
+We observe that items with visibility between 0.005 to 0.18 generate the most sales, whereas, items with visibility of more than 0.2 generate the least sales. We can also say that products with a very high visibility are not making a lot of sales. This can be due to many reasons like, big items (or items with more visibility) are more costly, so they are sold less, or because big items are hard to carry around and therefore not purchased daily or in bulk.
+
+Since Item_Visibility can (not necessarily) be correlated with Item_Weight, we will check if Item_Weight analysis gives us the same result.
+
+#First, checking to see if the Item_Weight is greater than or equal to 0. We can simply do so by checking the minimum value for this variable.
+df['Item_Weight'].min()
+
+#The minimum is 4.555 units
+pd.set_option('display.float_format', lambda x: '%.3f' % x)
+item_visibility_sales = df.groupby("Item_Weight")[["Item_Outlet_Sales"]].sum().sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+item_visibility_sales.sort_values(by=['Item_Outlet_Sales'],ascending=[False])
+
+So far, we see product with 12.150 units has sold the most and an item of 6.440 units has made the least of amount of sales.
+
+```
+
+
+
+fig = px.scatter(df,x='Item_Weight', y='Item_Outlet_Sales',color='Item_Weight')
+fig.show()
+
+The scatter plot also shows that products with weight 12.6 units are making the most sales. The total sales corresponding to other item weight are scattered across the plot.
+
+Item MRP v/s Sales
+Which category do these products fall under?
+Checking the sales for different item MRP below:-
+
+df.groupby("Item_MRP")[["Item_Outlet_Sales"]].max().sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+
+The above outpt shows the MRP 234.996 has the most Item Outlet Sales. Per the output so far, we are displaying that MRP 35.06 has the least amount of sales.
+
+df.loc[df['Item_MRP'] ==234.9958]
+
+Per the output above, we show the units making the highest sales are Fruits and Vegetables and Household Items.
+
+df.loc[df['Item_MRP'] ==31.290]
+
+The lowest sales per MRP are Soft Drinks.
+
+fig = px.scatter(df,x='Item_MRP', y='Item_Outlet_Sales',color='Item_Weight')
+fig.show()
+
+Products performing better and worse in Tier 1 cities v/s Tier 2 & 3 cities in terms of Sales
+
+In the last section, we will look at two questions?
+- What are some products that sell better in Tier 1 cities as compared to Tier 2 and Tier 3 cities?
+- Are there any products selling better in Tier 2 and 3 cities as compared to Tier 1 cities?
+
+df_tier1=pd.DataFrame(df.loc[df['Outlet_Location_Type'] =='Tier 1'])
+print(df_tier1)
+
+
+df_tier2=pd.DataFrame(df.loc[df['Outlet_Location_Type'] =='Tier 2']) #for tier 2
+df_tier3=pd.DataFrame(df.loc[df['Outlet_Location_Type'] =='Tier 3']) #for tier 3
+df_cities=pd.concat([df_tier2,df_tier3],axis=0) #combining dfs for tier 2 & 3
+print(df_tier2, df_tier3)
+
+We have saved the Tier 1 cities data in the variable "df_tier1" and the same for Tier 2 & 3 in the variable named "df_cities"
+
+Now, we will analyze how each product is performing for firstly Tier 1 cities and then for Tier 2 and 3 cities.
+
+df_tier1_list=df_tier1.groupby("Item_Type")[["Item_Outlet_Sales"]].max().sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+df_tier1_list.rename(columns = {'Item_Type':'Items_Tier_1','Item_Outlet_Sales':'Sales_tier_1'}, inplace = True)
+print(df_tier1_list)
+
+
+#For Tier 2 & 3 Cities
+df_cities_list=df_cities.groupby("Item_Type")[["Item_Outlet_Sales"]].max().sort_values(by=['Item_Outlet_Sales'],ascending=[False]).reset_index()
+df_cities_list.rename(columns = {'Item_Type':'Items_Tier2_3','Item_Outlet_Sales':'Sales_tier2_3'}, inplace = True)
+print(df_cities_list)
+
+#Concatenating these two dataframes into one variable named 'df_sales'
+df_sales=pd.concat([df_tier1_list,df_cities_list],axis=1)
+df_sales
+
+A combined dataframe helps us to see the sales corresponding to each for each item for the two categories cities.
+
+import plotly.graph_objects as go   #importing the library
+x=df_sales['Items_Tier_1']
+y1=df_sales['Sales_tier_1']
+y2=df_sales['Sales_tier2_3']
+
+# Create traces
+
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=x, y=y1,
+                    mode='lines+markers',line_color='rgb(0,100,80)',
+                    name='tier 1 sales'))
+fig.add_trace(go.Scatter(x=x, y=y2,
+                    mode='lines+markers',
+                    name='tier 2&3 sales'))
+
+fig.show()
+
+Sales generated by Tier 2&3 have performed better than Tier1. No one item has performed better in Tier1 Cities than Tier2 Cities except the Other category, with a slight margin.
+
+Conclusion with answers to our initial questions -
+You want to know how the following factors affect the sales:-
+
+**Does the outlet type (grocery store or supermarket) have any impact on the overall sales**?
+
+Sales have been impacted by:
+
+
+*   Supermarket Type
+*   City Type - Tier1, Tier2 and Tier3
+*   Outlet Size
+*   Items Tier
+*   Item Weight
+
+**Which type of city has the most overall sales? Or which outlet location makes the most overall sales?**
+
+Tier 3 Cities make the most sales. The outlet location that makes the most sales is SuperMarketType1 and Medium Sized outlets made the most sales.
+
+**Does the outlet size have any impact on the overall sales? Yes, Medium Sized outlets made the most sales.**
+
+**Which category of products sells the most and the least? **
+
+Categories in Household Goods and Fruits and Vegetables sold the most, while categories in the Other Category such as Soft Drinks sold the least.
+
+**Do the product visibility and weight have any impact on the sales of the product?**
+
+We observe that items with visibility between 0.005 to 0.18 generate the most sales, whereas, items with visibility of more than 0.2 generate the least sales. We can also say that products with a very high visibility are not making a lot of sales. This can be due to many reasons like, big items (or items with more visibility) are more costly, so they are sold less, or because big items are hard to carry around and therefore not purchased daily or in bulk.
+
+**What is the average MRP of the product that sells the most and the least? Which category do these products fall under?**
+
+The above outpt shows the MRP 234.996 has the most Item Outlet Sales.
+The lowest sales per MRP are Soft Drinks.
+
+**What are some products that sell better in Tier 1 cities as compared to Tier 2 and Tier 3 cities? **
+
+Some of the products in Other Category sold better in Tier1 Cities by a slight margin than the Tier 2 & 3 Cities.
+
+**Are there any products selling better in Tier 2 and 3 cities as compared to Tier 1 cities?**
+
+The Household Goods, Fruits and Vegetables sold more than the Tier 1 Cities.
